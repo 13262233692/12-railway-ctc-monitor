@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<station name="北京南">
+  <!-- 接近区段 (Approach Tracks) -->
+  <trackCircuit id="IAG" type="approach">
+    <segment x1="50" y1="250" x2="380" y2="250"/>
+  </trackCircuit>
+  <trackCircuit id="IBG" type="approach">
+    <segment x1="680" y1="250" x2="1010" y2="250"/>
+  </trackCircuit>
+
+  <!-- 正线到发线 (Main Line Tracks) -->
+  <trackCircuit id="1G" type="main">
+    <segment x1="380" y1="200" x2="680" y2="200"/>
+  </trackCircuit>
+  <trackCircuit id="2G" type="main">
+    <segment x1="380" y1="300" x2="680" y2="300"/>
+  </trackCircuit>
+
+  <!-- 侧线到发线 (Side Line Tracks) -->
+  <trackCircuit id="3G" type="side">
+    <segment x1="380" y1="370" x2="680" y2="370"/>
+  </trackCircuit>
+  <trackCircuit id="4G" type="side">
+    <segment x1="380" y1="430" x2="680" y2="430"/>
+  </trackCircuit>
+
+  <!-- 正线延续 (Main Through Lines) -->
+  <trackCircuit id="IIG" type="main">
+    <segment x1="50" y1="200" x2="380" y2="200"/>
+  </trackCircuit>
+  <trackCircuit id="IIIG" type="main">
+    <segment x1="680" y1="200" x2="1010" y2="200"/>
+  </trackCircuit>
+
+  <!-- 调车线 (Shunting Tracks) -->
+  <trackCircuit id="1DG" type="shunt">
+    <segment x1="380" y1="250" x2="430" y2="250"/>
+    <segment x1="430" y1="250" x2="430" y2="200"/>
+  </trackCircuit>
+  <trackCircuit id="2DG" type="shunt">
+    <segment x1="380" y1="250" x2="430" y2="250"/>
+    <segment x1="430" y1="250" x2="430" y2="370"/>
+  </trackCircuit>
+  <trackCircuit id="3DG" type="shunt">
+    <segment x1="630" y1="370" x2="680" y2="370"/>
+    <segment x1="630" y1="370" x2="680" y2="250"/>
+  </trackCircuit>
+  <trackCircuit id="4DG" type="shunt">
+    <segment x1="630" y1="430" x2="680" y2="430"/>
+    <segment x1="630" y1="430" x2="680" y2="300"/>
+  </trackCircuit>
+
+  <!-- 进站信号机 (Entry Signals) -->
+  <signal id="X" type="entry" x="35" y="200" direction="right"/>
+  <signal id="X1" type="entry" x="35" y="250" direction="right"/>
+  <signal id="X2" type="entry" x="35" y="300" direction="right"/>
+  <signal id="X3" type="entry" x="35" y="370" direction="right"/>
+
+  <!-- 出站信号机 (Exit Signals) -->
+  <signal id="S" type="exit" x="1025" y="200" direction="right"/>
+  <signal id="S1" type="exit" x="1025" y="250" direction="right"/>
+  <signal id="S2" type="exit" x="1025" y="300" direction="right"/>
+  <signal id="S3" type="exit" x="1025" y="370" direction="right"/>
+
+  <!-- 道岔 (Switches) -->
+  <switch id="1#" x="420" y="250" normalY="250" reverseY="200"/>
+  <switch id="2#" x="420" y="250" normalY="250" reverseY="370"/>
+  <switch id="3#" x="640" y="200" normalY="200" reverseY="250"/>
+  <switch id="5#" x="420" y="300" normalY="300" reverseY="370"/>
+  <switch id="7#" x="640" y="250" normalY="250" reverseY="300"/>
+  <switch id="9#" x="640" y="370" normalY="370" reverseY="300"/>
+</station>
