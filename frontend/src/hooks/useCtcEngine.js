@@ -77,6 +77,7 @@ export function useCtcEngine(svgContainerRef, stationXml) {
   const { lastMessage, connectionStatus, sendMessage } = useWebSocket(wsUrl);
 
   const rawStateRef = useRef(null);
+  const conflictRef = useRef([]);
 
   const [infoState, setInfoState] = useState(null);
   const lastInfoUpdateTime = useRef(0);
@@ -111,6 +112,17 @@ export function useCtcEngine(svgContainerRef, stationXml) {
         setInfoState(transformed);
       }
     }
+
+    if (lastMessage.type === 'conflict_warning') {
+      conflictRef.current = lastMessage.conflicts || [];
+      if (engineRef.current) {
+        engineRef.current.showConflictWarning(lastMessage.conflicts || []);
+      }
+      setInfoState(prev => ({
+        ...prev,
+        conflicts: lastMessage.conflicts || []
+      }));
+    }
   }, [lastMessage]);
 
   useEffect(() => {
@@ -143,5 +155,18 @@ export function useCtcEngine(svgContainerRef, stationXml) {
     });
   }, [sendMessage]);
 
-  return { infoState, connectionStatus, requestRoute, cancelRoute };
+  const clearConflicts = useCallback(() => {
+    if (engineRef.current) {
+      engineRef.current.clearConflictWarnings();
+    }
+    conflictRef.current = [];
+    setInfoState(prev => {
+      if (!prev) return prev;
+      const next = { ...prev };
+      delete next.conflicts;
+      return next;
+    });
+  }, []);
+
+  return { infoState, connectionStatus, requestRoute, cancelRoute, clearConflicts };
 }

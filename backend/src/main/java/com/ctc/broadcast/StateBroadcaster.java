@@ -1,5 +1,6 @@
 package com.ctc.broadcast;
 
+import com.ctc.interlocking.ConflictResult;
 import com.ctc.interlocking.InterlockingEngine;
 import com.ctc.interlocking.RouteResult;
 import com.ctc.model.InterlockingState;
@@ -86,6 +87,13 @@ public class StateBroadcaster {
         RouteResult result = engine.requestRoute(routeId);
         System.out.println("Route request " + routeId + ": " + result.message());
         broadcast();
+
+        if (!result.success() && !engine.getActiveConflicts().isEmpty()) {
+            JsonObject conflictMsg = new JsonObject();
+            conflictMsg.addProperty("type", "conflict_warning");
+            conflictMsg.add("conflicts", gson.toJsonTree(engine.getActiveConflicts()));
+            channels.writeAndFlush(new TextWebSocketFrame(gson.toJson(conflictMsg)));
+        }
     }
 
     private void handleCancelRoute(JsonObject message) {

@@ -80,11 +80,13 @@ export class StationDiagramEngine {
     this._createGlowFilter(defs, 'glow-red', '#ff3333');
     this._createGlowFilter(defs, 'glow-yellow', '#ffcc00');
     this._createGlowFilter(defs, 'glow-green', '#00cc66');
+    this._createGlowFilter(defs, 'glow-purple', '#cc33ff');
 
     this.g = this.svg.append('g').attr('class', 'station-group');
 
     this._trackGroup = this.g.append('g').attr('class', 'tracks');
     this._switchGroup = this.g.append('g').attr('class', 'switches');
+    this._conflictGroup = this.g.append('g').attr('class', 'conflicts');
     this._signalGroup = this.g.append('g').attr('class', 'signals');
     this._labelGroup = this.g.append('g').attr('class', 'labels');
 
@@ -257,6 +259,51 @@ export class StationDiagramEngine {
         .attr('data-label-for', sw.id)
         .text(sw.id);
     });
+  }
+
+  showConflictWarning(conflictPoints) {
+    if (!this._conflictGroup) return;
+
+    for (let i = 0; i < conflictPoints.length; i++) {
+      const cp = conflictPoints[i];
+      let cx = cp.x;
+      let cy = cp.y;
+
+      if (cx == null || cy == null) {
+        const trackEl = this._trackGroup.select(`path[data-track-id="${cp.trackId}"]`);
+        if (!trackEl.empty()) {
+          const node = trackEl.node();
+          try {
+            const bbox = node.getBBox();
+            cx = bbox.x + bbox.width / 2;
+            cy = bbox.y + bbox.height / 2;
+          } catch (_e) {
+            continue;
+          }
+        } else {
+          continue;
+        }
+      }
+
+      this._conflictGroup.append('circle')
+        .attr('cx', cx)
+        .attr('cy', cy)
+        .attr('r', 15)
+        .attr('fill', 'rgba(204, 51, 255, 0.3)')
+        .attr('stroke', '#cc33ff')
+        .attr('stroke-width', 2)
+        .attr('class', 'conflict-warning-pulse')
+        .attr('data-conflict-track', cp.trackId);
+    }
+  }
+
+  clearConflictWarnings() {
+    if (this._conflictGroup) {
+      this._conflictGroup.selectAll('*').remove();
+    }
+    if (this.g) {
+      this.g.selectAll('.conflict-warning-pulse').remove();
+    }
   }
 
   _buildSwitchPath(sw, position) {
@@ -475,6 +522,12 @@ export class StationDiagramEngine {
       const visible = (x + 50) >= vl && (x - 50) <= vr && maxY >= vt && minY <= vb;
       this.style.display = visible ? '' : 'none';
     });
+
+    if (this._conflictGroup) {
+      this._conflictGroup.selectAll('.conflict-warning-pulse').each(function () {
+        this.style.display = '';
+      });
+    }
   }
 
   forceInfoSync() {
@@ -510,6 +563,7 @@ export class StationDiagramEngine {
     this._prevSignalState.clear();
     this._prevSwitchState.clear();
     this._pendingMutations = [];
+    this._conflictGroup = null;
     this.svg = null;
     this.g = null;
     this.zoomBehavior = null;

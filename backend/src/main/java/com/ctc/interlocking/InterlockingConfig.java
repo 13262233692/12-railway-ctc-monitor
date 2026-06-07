@@ -12,6 +12,9 @@ import java.util.Set;
 
 public class InterlockingConfig {
 
+    private TrackTopologyGraph topologyGraph;
+    private ConflictPredictionEngine conflictPredictionEngine;
+
     public static final List<String> TRACK_CIRCUIT_IDS = List.of(
             "1G", "2G", "3G", "4G", "IAG", "IBG", "IIG", "IIIG", "1DG", "2DG", "3DG", "4DG"
     );
@@ -82,6 +85,62 @@ public class InterlockingConfig {
                 Set.of("Route5")
         ));
 
+        this.topologyGraph = buildTopologyGraph();
+        this.conflictPredictionEngine = new ConflictPredictionEngine(
+                topologyGraph,
+                engine.getTrackCircuits(),
+                engine.getSwitches(),
+                engine.getRouteDefinitions(),
+                engine.getActiveRoutes(),
+                engine.getApproachLockedRoutes()
+        );
+        engine.setConflictPredictionEngine(conflictPredictionEngine);
+
         return engine;
+    }
+
+    public static TrackTopologyGraph buildTopologyGraph() {
+        TrackTopologyGraph graph = new TrackTopologyGraph();
+
+        graph.addNode("IAG", 215, 250);
+        graph.addNode("IBG", 845, 250);
+        graph.addNode("1G", 530, 200);
+        graph.addNode("2G", 530, 300);
+        graph.addNode("3G", 530, 370);
+        graph.addNode("4G", 530, 430);
+        graph.addNode("IIG", 215, 200);
+        graph.addNode("IIIG", 845, 200);
+        graph.addNode("1DG", 405, 225);
+        graph.addNode("2DG", 405, 310);
+        graph.addNode("3DG", 655, 310);
+        graph.addNode("4DG", 655, 365);
+
+        graph.addBidirectionalEdge("IAG", "1DG");
+        graph.addBidirectionalEdge("IAG", "2DG");
+        graph.addBidirectionalEdge("1DG", "1G");
+        graph.addBidirectionalEdge("2DG", "3G");
+        graph.addBidirectionalEdge("1G", "1DG");
+        graph.addBidirectionalEdge("3G", "2DG");
+        graph.addBidirectionalEdge("1G", "IBG");
+        graph.addBidirectionalEdge("3G", "3DG");
+        graph.addBidirectionalEdge("3DG", "IBG");
+        graph.addBidirectionalEdge("IIG", "1G");
+        graph.addBidirectionalEdge("1G", "IIIG");
+        graph.addBidirectionalEdge("2G", "IBG");
+        graph.addBidirectionalEdge("2G", "IAG");
+        graph.addBidirectionalEdge("4G", "4DG");
+        graph.addBidirectionalEdge("4DG", "IBG");
+        graph.addBidirectionalEdge("1DG", "2DG");
+        graph.addBidirectionalEdge("3DG", "4DG");
+
+        return graph;
+    }
+
+    public TrackTopologyGraph getTopologyGraph() {
+        return topologyGraph;
+    }
+
+    public ConflictPredictionEngine getConflictPredictionEngine() {
+        return conflictPredictionEngine;
     }
 }

@@ -9,6 +9,7 @@ import com.ctc.model.TrackCircuitState;
 import com.ctc.parser.BitstreamParser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -35,6 +36,8 @@ public class InterlockingEngine {
 
     private final ReentrantLock evaluationLock = new ReentrantLock();
 
+    private ConflictPredictionEngine conflictPredictionEngine;
+
     private final BitstreamParser parser = new BitstreamParser();
 
     public void registerTrackCircuit(TrackCircuitState tc) {
@@ -54,6 +57,14 @@ public class InterlockingEngine {
         activeRoutes.put(route.getId(), false);
     }
 
+    public void setConflictPredictionEngine(ConflictPredictionEngine engine) {
+        this.conflictPredictionEngine = engine;
+    }
+
+    public ConflictPredictionEngine getConflictPredictionEngine() {
+        return conflictPredictionEngine;
+    }
+
     public RouteResult requestRoute(String routeId) {
         evaluationLock.lock();
         try {
@@ -64,6 +75,19 @@ public class InterlockingEngine {
 
             if (Boolean.TRUE.equals(activeRoutes.get(routeId))) {
                 return new RouteResult(false, "路线已激活: " + routeId);
+            }
+
+            if (conflictPredictionEngine != null) {
+                ConflictResult prediction = conflictPredictionEngine.predictConflicts(routeId);
+                if (prediction.hasConflict()) {
+                    StringBuilder conflictInfo = new StringBuilder("冲突预判熔断: ");
+                    for (ConflictResult.ConflictPoint cp : prediction.getConflictPoints()) {
+                        conflictInfo.append(cp.getTrackId())
+                            .append("(").append(cp.getType().name()).append(") ");
+                    }
+                    LOGGER.warning(conflictInfo.toString());
+                    return new RouteResult(false, conflictInfo.toString());
+                }
             }
 
             RouteValidation validation = validateRoute(def);
@@ -175,6 +199,21 @@ public class InterlockingEngine {
         activeRoutes.forEach((id, active) -> routeMap.put(id, active));
         state.setRoutes(routeMap);
 
+        List<Map<String, Object>> conflictWarnings = new ArrayList<>();
+        if (conflictPredictionEngine != null) {
+            for (ConflictResult.ConflictPoint cp : conflictPredictionEngine.getActiveConflicts()) {
+                Map<String, Object> warning = new HashMap<>();
+                warning.put("trackId", cp.getTrackId());
+                warning.put("type", cp.getType().name());
+                warning.put("description", cp.getDescription());
+                warning.put("x", cp.getX());
+                warning.put("y", cp.getY());
+                warning.put("conflictingRouteId", cp.getConflictingRouteId());
+                conflictWarnings.add(warning);
+            }
+        }
+        state.setConflictWarnings(conflictWarnings);
+
         state.setTimestamp(System.currentTimeMillis());
         return state;
     }
@@ -201,6 +240,19 @@ public class InterlockingEngine {
 
     public ConcurrentHashMap<String, Boolean> getApproachLockedRoutes() {
         return approachLockedRoutes;
+    }
+
+    public List<ConflictResult.ConflictPoint> getActiveConflicts() {
+        if (conflictPredictionEngine != null) {
+            return conflictPredictionEngine.getActiveConflicts();
+        }
+        return new ArrayList<>();
+    }
+
+    public void clearConflicts() {
+        if (conflictPredictionEngine != null) {
+            conflictPredictionEngine.clearConflicts();
+        }
     }
 
     private RouteValidation validateRoute(RouteDefinition def) {

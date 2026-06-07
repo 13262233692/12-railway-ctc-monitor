@@ -446,3 +446,60 @@ html, body, #root {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+.conflict-warning-pulse {
+    animation: conflict-pulse 0.6s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes conflict-pulse {
+    0% {
+        opacity: 0.3;
+        r: 12;
+        stroke-width: 2;
+        stroke: #cc33ff;
+        fill: rgba(204, 51, 255, 0.15);
+    }
+    100% {
+        opacity: 1;
+        r: 20;
+        stroke-width: 4;
+        stroke: #ff66ff;
+        fill: rgba(204, 51, 255, 0.4);
+    }
+}
+
+.conflict-section {
+    margin-top: 12px;
+}
+
+.conflict-section .info-section-title {
+    color: #cc33ff;
+}
+
+.conflict-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    margin: 3px 0;
+    border-radius: 4px;
+    background: rgba(204, 51, 255, 0.15);
+    border-left: 3px solid #cc33ff;
+    font-size: 12px;
+    color: #e0b0ff;
+}
+
+.conflict-type-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: rgba(204, 51, 255, 0.3);
+    color: #ff99ff;
+    white-space: nowrap;
+}
+
+.conflict-description {
+    flex: 1;
+    font-size: 11px;
+}

@@ -1,6 +1,8 @@
 package com.ctc.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class InterlockingState {
@@ -9,6 +11,7 @@ public class InterlockingState {
     private Map<String, String> signals = new HashMap<>();
     private Map<String, Integer> switches = new HashMap<>();
     private Map<String, Boolean> routes = new HashMap<>();
+    private List<Map<String, Object>> conflictWarnings = new ArrayList<>();
     private long timestamp = System.currentTimeMillis();
 
     public Map<String, Boolean> getTrackCircuits() {
@@ -41,6 +44,14 @@ public class InterlockingState {
 
     public void setRoutes(Map<String, Boolean> routes) {
         this.routes = routes;
+    }
+
+    public List<Map<String, Object>> getConflictWarnings() {
+        return conflictWarnings;
+    }
+
+    public void setConflictWarnings(List<Map<String, Object>> conflictWarnings) {
+        this.conflictWarnings = conflictWarnings;
     }
 
     public long getTimestamp() {

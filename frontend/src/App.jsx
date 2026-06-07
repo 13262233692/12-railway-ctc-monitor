@@ -111,6 +111,21 @@ const SwitchItem = memo(function SwitchItem({ id, position }) {
   );
 });
 
+const ConflictItem = memo(function ConflictItem({ type, description, trackId }) {
+  const typeLabels = {
+    SAFETY_ENVELOPE_OVERLAP: '包络线',
+    OPPOSING_ROUTE_ACTIVE: '敌对进路',
+    APPROACH_LOCKED_CONFLICT: '接近锁闭',
+    SWITCH_POSITION_CONFLICT: '道岔冲突'
+  };
+  return (
+    <div className="conflict-item">
+      <span className="conflict-type-badge">{typeLabels[type] || type}</span>
+      <span className="conflict-description">{description}</span>
+    </div>
+  );
+});
+
 const RouteControlItem = memo(function RouteControlItem({ label, isActive, onAction, disabled }) {
   return (
     <div className="route-control-item">
@@ -131,9 +146,11 @@ const InfoPanel = memo(function InfoPanel({
   trackCircuits,
   switches,
   routes,
+  conflicts,
   connectionStatus,
   requestRoute,
   cancelRoute,
+  onClearConflicts,
 }) {
   const signalEntries = signals ? Object.entries(signals) : [];
   const trackEntries = trackCircuits ? Object.entries(trackCircuits) : [];
@@ -197,6 +214,20 @@ const InfoPanel = memo(function InfoPanel({
             ))}
           </div>
         </div>
+
+        {conflicts && conflicts.length > 0 && (
+          <div className="info-section conflict-section">
+            <h3 className="info-section-title">⚠ 冲突预警</h3>
+            <div className="conflict-list">
+              {conflicts.map((cp, i) => (
+                <ConflictItem key={i} type={cp.type} description={cp.description} trackId={cp.trackId} />
+              ))}
+            </div>
+            <button className="route-btn route-btn-cancel" onClick={onClearConflicts} style={{marginTop: 8, width: '100%'}}>
+              清除警告
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );
@@ -225,7 +256,7 @@ function App() {
     svgContainerRef.current = node;
   }, []);
 
-  const { infoState, connectionStatus, requestRoute, cancelRoute } = useCtcEngine(
+  const { infoState, connectionStatus, requestRoute, cancelRoute, clearConflicts } = useCtcEngine(
     svgContainerRef,
     stationXml
   );
@@ -234,6 +265,7 @@ function App() {
   const trackCircuits = infoState?.trackCircuits || {};
   const switches = infoState?.switches || {};
   const routes = infoState?.routes || {};
+  const conflicts = infoState?.conflicts || [];
   const tickCount = infoState?.timestamp ?? 0;
 
   return (
@@ -246,9 +278,11 @@ function App() {
           trackCircuits={trackCircuits}
           switches={switches}
           routes={routes}
+          conflicts={conflicts}
           connectionStatus={connectionStatus}
           requestRoute={requestRoute}
           cancelRoute={cancelRoute}
+          onClearConflicts={clearConflicts}
         />
       </main>
       <FooterBar tickCount={tickCount} connectionStatus={connectionStatus} />
